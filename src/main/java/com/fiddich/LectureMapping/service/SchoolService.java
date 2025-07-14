@@ -1,4 +1,4 @@
-package com.fiddich.LectureMapping.nouse;
+package com.fiddich.LectureMapping.service;
 
 import com.fiddich.LectureMapping.entity.School;
 import jakarta.persistence.EntityManager;
@@ -14,8 +14,8 @@ public class SchoolService {
 
     private School school;
 
-    public void initializeSchool() {
-        Long campusId = 13L; // 성균관대학교 ID
+    public void initializeSchool(Long campusId, String campusName) {
+
         School existingSchool = em.find(School.class, campusId);
 
         if (existingSchool != null) {
@@ -23,7 +23,7 @@ public class SchoolService {
         } else {
             School school = new School();
             school.setId(campusId);
-            school.setName("성균관대학교");
+            school.setName(campusName);
             em.persist(school);
             this.school = school;
         }

@@ -1,4 +1,4 @@
-package com.fiddich.LectureMapping;
+package com.fiddich.LectureMapping.helper;
 
 import com.fiddich.LectureMapping.entity.Lecture;
 

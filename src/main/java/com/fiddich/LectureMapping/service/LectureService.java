@@ -1,4 +1,4 @@
-package com.fiddich.LectureMapping.nouse;
+package com.fiddich.LectureMapping.service;
 
 import com.fiddich.LectureMapping.entity.Category;
 import com.fiddich.LectureMapping.entity.Lecture;
@@ -32,6 +32,7 @@ public class LectureService {
 
     @Transactional
     public void fetchAndSaveAllLectures(String year, String semester, int batchSize) throws IOException {
+        // 하위 카테고리만 가져옴
         List<Category> childCategories = getChildCategories(year, semester);
 
         for (Category category : childCategories) {
@@ -52,8 +53,7 @@ public class LectureService {
                 .getResultList();
     }
 
-    private int processCategoryLectures(Category category, String year, String semester, int batchSize)
-            throws IOException {
+    private int processCategoryLectures(Category category, String year, String semester, int batchSize) throws IOException {
         int totalSaved = 0;
         int currentStart = 0;
         boolean hasMoreData = true;
@@ -61,7 +61,7 @@ public class LectureService {
         while (hasMoreData) {
             List<Lecture> lectures = fetchLectures(
                     category.getId(),
-                    category.getCampusId(),
+                    category.getSchool().getId(),
                     year,
                     semester,
                     batchSize,
@@ -115,9 +115,6 @@ public class LectureService {
     private void saveLectures(List<Lecture> lectures, Category category, String year, String semester) {
         lectures.forEach(lecture -> {
             lecture.setCategory(category);
-            lecture.setYear(year);
-            lecture.setSemester(semester);
-            lecture.setSchool(schoolService.getCurrentSchool());
             em.persist(lecture);
         });
     }

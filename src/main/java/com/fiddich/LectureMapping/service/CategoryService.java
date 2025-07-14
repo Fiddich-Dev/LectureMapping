@@ -1,6 +1,8 @@
-package com.fiddich.LectureMapping.nouse;
+package com.fiddich.LectureMapping.service;
 
+import com.fiddich.LectureMapping.helper.SchoolMapper;
 import com.fiddich.LectureMapping.entity.Category;
+import com.fiddich.LectureMapping.entity.School;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -25,15 +27,17 @@ public class CategoryService {
     private final EntityManager em;
     private final SchoolService schoolService;
 
+
     @Transactional
     public void fetchAndSaveCategories(String year, String semester) throws IOException {
+        // 쿠키로 캠퍼스 가져오기
         Document doc = fetchCategoryDocument(year, semester);
         Element campus = doc.selectFirst("campus");
 
         if (campus == null) {
             throw new IllegalStateException("Campus element not found");
         }
-
+        // 캠퍼스로 카테고리 가져오기
         processCategories(campus, year, semester);
     }
 
@@ -59,8 +63,7 @@ public class CategoryService {
         categoryElements.forEach(el -> setParentChildRelationship(el, categoryMap));
 
         // 최상위 카테고리 저장
-        categoryMap.values().stream()
-                .filter(c -> c.getParent() == null)
+        categoryMap.values()
                 .forEach(em::persist);
 
         em.flush();
@@ -69,14 +72,19 @@ public class CategoryService {
 
     private void createAndMapCategory(Element el, Map<Long, Category> map,
                                       String year, String semester, Long campusId) {
-        Category category = new Category(
-                Long.valueOf(el.attr("id")),
-                el.attr("name"),
-                Integer.parseInt(el.attr("order"))
-        );
+
+        Category category = new Category();
+        category.setId(Long.valueOf(el.attr("id")));
+
+        School school = new School();
+        school.setId(campusId);
+        school.setName(SchoolMapper.getNameById(campusId));
+        category.setSchool(school);
+
+        category.setName(el.attr("name"));
         category.setYear(year);
         category.setSemester(semester);
-        category.setCampusId(campusId);
+
         map.put(category.getId(), category);
     }
 
@@ -88,10 +96,10 @@ public class CategoryService {
             Category child = map.get(id);
             Category parent = map.get(parentId);
             child.setParent(parent);
-            parent.getChildren().add(child);
         }
     }
 
+    // 헤더 설정
     private Map<String, String> getCommonHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put("accept", "*/*");
@@ -110,6 +118,7 @@ public class CategoryService {
         return headers;
     }
 
+    // 쿠키 설정
     private Map<String, String> getCommonCookies() {
         Map<String, String> cookies = new HashMap<>();
         cookies.put("_ga", "GA1.1.1955426778.1751110516");
