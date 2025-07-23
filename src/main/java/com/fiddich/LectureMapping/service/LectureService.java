@@ -2,6 +2,7 @@ package com.fiddich.LectureMapping.service;
 
 import com.fiddich.LectureMapping.entity.Category;
 import com.fiddich.LectureMapping.entity.Lecture;
+import com.fiddich.LectureMapping.entity.LectureTime;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -104,11 +105,25 @@ public class LectureService {
         lecture.setName(subject.attr("name"));
         lecture.setProfessor(subject.attr("professor"));
         lecture.setType(subject.attr("type"));
-        lecture.setTime(parseTime(subject.attr("time")));
+//        lecture.setLectureTime(parseTime(subject.attr("time")));
         lecture.setPlace(subject.attr("place"));
         lecture.setCredit(subject.attr("credit"));
         lecture.setTarget(subject.attr("target"));
         lecture.setNotice(subject.attr("notice"));
+
+
+        // 🔽 timeplace 태그들 파싱
+        for (Element timePlaceEl : subject.select("timeplace")) {
+            LectureTime lectureTime = new LectureTime();
+            lectureTime.setDay(Integer.parseInt(timePlaceEl.attr("day")));
+            lectureTime.setStart(Integer.parseInt(timePlaceEl.attr("start")));
+            lectureTime.setEnd(Integer.parseInt(timePlaceEl.attr("end")));
+            lectureTime.setLecture(lecture);
+
+//            lecture.addTimePlace(timePlace);
+            lecture.addLectureTime(lectureTime);
+        }
+
         return lecture;
     }
 
